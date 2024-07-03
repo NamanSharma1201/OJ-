@@ -12,7 +12,11 @@ const port = process.env.PORT || 8000;
 const app = express();
 connectDB();
 
-app.use(cors());
+const corsOptions = {
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());

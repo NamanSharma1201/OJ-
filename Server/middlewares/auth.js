@@ -3,7 +3,6 @@ import User from "../models/user.js";
 
 export const restrictToLoggedIn = async (req, res, next) => {
   const token = req.cookies?.uid;
-  console.log("token ", token);
 
   if (!token) {
     return res.redirect("/api/user/login");

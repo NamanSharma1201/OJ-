@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import { exec } from "child_process";
+import psTree from "ps-tree";
 
 export const executeCode = async function (req, res) {
   const __filename = fileURLToPath(import.meta.url);
@@ -27,8 +28,9 @@ export const executeCode = async function (req, res) {
     fs.writeFileSync(fileName, code);
     fs.writeFileSync(inputfile, input);
 
+    let childProcess;
     const compileCode = new Promise((resolve, reject) => {
-      exec(
+      childProcess = exec(
         `g++ ${fileName} -o ${outputfile} && cd ${outputPath} && ${id}.exe < ${inputfile}`,
         (error, stdout, stderr) => {
           if (error) {
@@ -43,23 +45,52 @@ export const executeCode = async function (req, res) {
     });
 
     const timeout = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error("Execution timed out")), 5000);
+      setTimeout(async () => {
+        if (childProcess) {
+          await killAllChildProcesses(childProcess.pid);
+        }
+        reject(new Error("Time Limit Exceeded"));
+      }, 5000);
     });
 
     const output = await Promise.race([timeout, compileCode]);
 
     res.render("home", { output, code, input });
   } catch (err) {
-    console.error("Error executing code:", err);
-    res.render("home", { output: `Error: ${err}`, code, input });
+    res.render("home", {
+      output: `${err.stderr ? err.stderr : err}`,
+      code,
+      input,
+    });
   } finally {
     try {
       const filesToDelete = [fileName, inputfile, outputfile];
       filesToDelete.forEach((file) => {
-        fs.unlinkSync(file);
+        if (fs.existsSync(file)) {
+          fs.unlinkSync(file);
+        }
       });
     } catch (deleteErr) {
-      console.error("Error deleting files:", deleteErr);
+      // console.error("Error deleting files:", deleteErr);
     }
   }
 };
+
+async function killAllChildProcesses(pid) {
+  return new Promise((resolve, reject) => {
+    psTree(pid, (err, children) => {
+      if (err) {
+        console.error("Error finding child processes:", err);
+        return reject(err);
+      }
+      [pid, ...children.map((p) => p.PID)].forEach((tpid) => {
+        try {
+          process.kill(tpid);
+        } catch (e) {
+          // console.error(`Error killing process ${tpid}:`, e);
+        }
+      });
+      resolve();
+    });
+  });
+}

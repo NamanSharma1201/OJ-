@@ -91,7 +91,7 @@
             id="code-input"
             placeholder="Enter your code here..."
           >
-<%= locals.code ? code : '' %></textarea
+<%= typeof code !== 'undefined' ? code : '' %></textarea
           >
         </div>
         <div class="row">
@@ -103,15 +103,17 @@
                 id="user-input"
                 placeholder="Enter user input here..."
               >
-<%= locals.input ? input : '' %></textarea
+<%= typeof input !== 'undefined' ? input : '' %></textarea
               >
             </div>
           </div>
           <div class="col">
             <div class="output">
               <h2>Output</h2>
-              <% if (locals.output) { %>
-              <pre><%= JSON.stringify(output, null, 2) %></pre>
+              <% if (output) { %>
+              <pre>
+<%= typeof output === 'object' ? JSON.stringify(output, null, 2) : output %></pre
+              >
               <% } else { %>
               <pre>Output will be displayed here...</pre>
               <% } %>

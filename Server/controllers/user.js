@@ -2,61 +2,48 @@ import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 import { setUser, getUser } from "../services/auth.js";
 import { validatePassword, hashPassword } from "../services/pass.js";
-import { tranporter } from "../services/mail.js";
+import transporter from "../services/mail.js"; // Note the correction from 'tranporter' to 'transporter'
 
 class UserController {
-  //////////////////////////////////////////////////////////
-  // User Login
-  ///////////////////////////////////////////////////////////
   static userLogout = async (req, res) => {
     res.clearCookie("uid");
     res.redirect("/api/login");
   };
-  /////////////////////////////////////////////////////////
-  // User Registration
-  /////////////////////////////////////////////////////////
-  static userRegistration = async (req, res) => {
-    const { username, password, email } = req.body;
 
-    if (!(username, password, email)) {
+  static userRegistration = async (req, res) => {
+    const { name, password, email } = req.body;
+
+    if (!(name && password && email)) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
-      const existingUser = await User.findOne({
-        $or: [{ email }, { username }],
-      });
+      const existingUser = await User.findOne({ email });
 
       if (existingUser) {
-        if (existingUser.email === email) {
-          return res.status(400).json({ message: "Email already exists" });
-        }
-        if (existingUser.username === username) {
-          return res.status(400).json({ message: "Username already taken" });
-        }
+        return res.status(400).json({ message: "Email already exists" });
       }
 
       const hashedPassword = await hashPassword(password);
 
       const user = await User.create({
-        username,
+        name,
         email,
         password: hashedPassword,
       });
 
       const token = await setUser(user);
-      res.cookie("uid", token);
+      res.cookie("uid", token, {
+        httpOnly: true,
+        secure: true,
+      });
 
-      return res.json({ message: "Registration successful" });
+      return res.json({ message: "Registration successful", uid: token });
     } catch (error) {
-      console.error("Error during registration:", error);
       return res.status(500).json({ message: "Registration Failed" });
     }
   };
 
-  /////////////////////////////////////////////////////////
-  // User Login
-  /////////////////////////////////////////////////////////
   static userLogin = async (req, res) => {
     const { email, password } = req.body;
 
@@ -78,52 +65,17 @@ class UserController {
       req.body.password = undefined;
 
       const token = await setUser(user);
-      res.cookie("uid", token);
+      res.cookie("uid", token, {
+        httpOnly: true,
+        secure: true,
+      });
 
-      return res.json({ message: "Login successful" });
+      return res.json({ message: "Login successful", uid: token });
     } catch (error) {
-      console.error("Error during login:", error);
       return res.status(500).json({ message: "Login Failed" });
     }
   };
 
-  /////////////////////////////////////////////////////////
-  // Change User Password
-  /////////////////////////////////////////////////////////
-  static changeUserPassword = async (req, res) => {
-    const { oldPassword, newPassword } = req.body;
-
-    if (!(oldPassword && newPassword)) {
-      return res.status(400).json({ message: "All fields are required" });
-    }
-
-    try {
-      const user = req.user;
-
-      const isOldPasswordValid = await validatePassword(
-        oldPassword,
-        user.password
-      );
-      if (!isOldPasswordValid) {
-        return res.status(401).json({ message: "Incorrect old password" });
-      }
-
-      const hashedPassword = await hashPassword(newPassword);
-      user.password = hashedPassword;
-      await user.save();
-
-      req.body.password = undefined;
-
-      return res.json({ message: "Password changed successfully" });
-    } catch (error) {
-      console.error("Error during password change:", error);
-      return res.status(500).json({ message: "Password change failed" });
-    }
-  };
-
-  /////////////////////////////////////////////////////////
-  // Send Password Reset Email
-  /////////////////////////////////////////////////////////
   static sendPasswordResetEmail = async (req, res) => {
     const { email } = req.body;
 
@@ -133,42 +85,38 @@ class UserController {
 
     try {
       const user = await User.findOne({ email });
-
       if (!user) {
-        return res
-          .status(401)
-          .json({ message: "No user found with this email" });
+        return res.status(404).json({ message: "User not found" });
       }
 
-      const secret = user._id + process.env.JWT_SECRET;
-      const token = jwt.sign({ userID: user._id }, secret, {
-        expiresIn: "15m",
-      });
+      const token = jwt.sign(
+        { userID: user._id },
+        user._id + process.env.JWT_SECRET,
+        { expiresIn: "1h" }
+      );
 
-      const link = `http://localhost:3000/api/user/reset/${user._id}/${token}`;
-      const info = await tranporter.sendMail({
-        from: process.env.MAIL_USER,
-        to: email,
-        subject: "Password Reset Request",
-        text: `The link below will be active for 15 minutes:\n\n${link}`,
-        html: `<h3><a href="${link}">Click this link to reset your password</a></h3>`,
+      const resetLink = `http://localhost:5173/reset/${user._id}/${token}`;
+
+      // Send email logic here
+      await transporter.sendMail({
+        from: '"Your App" <yourapp@example.com>',
+        to: user.email,
+        subject: "Password Reset",
+        text: `Click the following link to reset your password: ${resetLink}`,
+        html: `<p>Click the following link to reset your password: <a href="${resetLink}">Reset Password</a></p>`,
       });
 
       return res.json({
-        message: "Password reset link has been sent to your email",
-        link: link,
+        message: "Password reset email sent",
+        link: resetLink,
       });
     } catch (error) {
-      console.error("Error sending password reset email:", error);
       return res
         .status(500)
         .json({ message: "Failed to send password reset email" });
     }
   };
 
-  /////////////////////////////////////////////////////////
-  // Reset Password
-  /////////////////////////////////////////////////////////
   static resetPassword = async (req, res) => {
     const { userID, token } = req.params;
     const { password } = req.body;
@@ -196,15 +144,44 @@ class UserController {
           await user.save();
 
           req.body.password = undefined;
-
           return res.redirect("/api/user/login");
         } else {
           return res.status(401).json({ message: "Invalid request" });
         }
       });
     } catch (error) {
-      console.error("Error resetting password:", error);
       return res.status(500).json({ message: "Failed to reset password" });
+    }
+  };
+
+  static changeUserPassword = async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const userID = req.user.id; // Assuming the user ID is stored in req.user
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    try {
+      const user = await User.findById(userID);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const isPasswordValid = await validatePassword(
+        oldPassword,
+        user.password
+      );
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Incorrect old password" });
+      }
+
+      user.password = await hashPassword(newPassword);
+      await user.save();
+
+      return res.json({ message: "Password changed successfully" });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to change password" });
     }
   };
 }

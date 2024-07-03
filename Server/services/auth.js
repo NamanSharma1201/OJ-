@@ -8,7 +8,7 @@ export const setUser = async function (user) {
       id: user._id,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "15d" }
   );
 
   return token;
