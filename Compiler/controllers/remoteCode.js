@@ -11,16 +11,12 @@ const __dirname = path.dirname(__filename);
 export const executeCodeRemote = async (req, res) => {
   const { language, code, input } = req.body;
   if (!code || !language) {
-    return res.status(401).send({ message: "Invalid Request" });
+    res.status(401).send({ message: "Invalid Request" });
   }
 
-  const inputPath = path.join(__dirname, "../Remote/Inputs", language);
-  const codePath = path.join(__dirname, "../Remote/Codes", language);
-  const executablePath = path.join(
-    __dirname,
-    "../Remote/Executables",
-    language
-  );
+  const inputPath = path.join(__dirname, "../Remote/Inputs");
+  const codePath = path.join(__dirname, "../Remote/Codes");
+  const executablePath = path.join(__dirname, "../Remote/Executables");
   const id = uuid();
 
   const inputFile = path.join(inputPath, `${id}.txt`);
@@ -29,7 +25,15 @@ export const executeCodeRemote = async (req, res) => {
 
   try {
     fs.writeFileSync(inputFile, input);
-    fs.writeFileSync(codeFile, code);
+
+    let javaFileName;
+    if (language === "java") {
+      const className = code.match(/class\s+(\w+)/)[1];
+      javaFileName = `${className}.java`;
+      fs.writeFileSync(path.join(codePath, javaFileName), code);
+    } else {
+      fs.writeFileSync(codeFile, code);
+    }
 
     let childProcess;
     const runCode = new Promise((resolve, reject) => {
@@ -47,8 +51,12 @@ export const executeCodeRemote = async (req, res) => {
           }
         );
       } else if (language === "java") {
+        const className = code.match(/class\s+(\w+)/)[1];
         childProcess = exec(
-          `javac ${codeFile} && java -cp ${codePath} ${id} < ${inputFile}`,
+          `javac ${path.join(
+            codePath,
+            javaFileName
+          )} && cd ${codePath} && java ${className} < ${inputFile}`,
           (error, stdout, stderr) => {
             if (error) {
               reject({ error, stderr });
@@ -72,7 +80,7 @@ export const executeCodeRemote = async (req, res) => {
             }
           }
         );
-      } else if (language === "js") {
+      } else {
         childProcess = exec(
           `node ${codeFile} < ${inputFile}`,
           (error, stdout, stderr) => {
@@ -85,8 +93,6 @@ export const executeCodeRemote = async (req, res) => {
             }
           }
         );
-      } else {
-        reject(new Error("Unsupported language"));
       }
     });
 
@@ -105,13 +111,21 @@ export const executeCodeRemote = async (req, res) => {
     res.send(err.stderr ? err.stderr : err);
   } finally {
     try {
-      const filesToDelete = [inputFile, codeFile, executableFile];
+      const filesToDelete = [codeFile, inputFile];
+      if (language === "java") {
+        filesToDelete.push(path.join(codePath, javaFileName));
+        filesToDelete.push(
+          path.join(codePath, javaFileName.replace(".java", ".class"))
+        );
+      }
       filesToDelete.forEach((file) => {
         if (fs.existsSync(file)) {
           fs.unlinkSync(file);
         }
       });
-    } catch (deleteErr) {}
+    } catch (deleteErr) {
+      // console.error("Error deleting files:", deleteErr);
+    }
   }
 };
 
@@ -119,13 +133,14 @@ async function killAllChildProcesses(pid) {
   return new Promise((resolve, reject) => {
     psTree(pid, (err, children) => {
       if (err) {
+        console.error("Error finding child processes:", err);
         return reject(err);
       }
       [pid, ...children.map((p) => p.PID)].forEach((tpid) => {
         try {
           process.kill(tpid);
         } catch (e) {
-          console.error(`Error killing process ${tpid}:`, e);
+          // console.error(`Error killing process ${tpid}:`, e);
         }
       });
       resolve();
