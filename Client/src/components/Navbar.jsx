@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import { AppBar, Box, Toolbar, Typography, Button, IconButton, useMediaQuery } from '@mui/material';
 import { NavLink } from 'react-router-dom';
 import HomeIcon from '@mui/icons-material/Home';
@@ -12,11 +13,12 @@ import MenuIcon from '@mui/icons-material/Menu';
 import Logo from '../images/logo-no-background.png';
 
 const Navbar = () => {
+  const isLoggedIn = useSelector(state => state.user.name) || (localStorage.getItem('name'));
+
   const isSmallScreen = useMediaQuery('(max-width:600px)');
-  const cookie = document.cookie.split('; ').find(row => row.startsWith('uid='));
 
   return (
-    <Box sx={{ flexGrow: 0 }}>
+    <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ backgroundColor: '#3f51b5' }}>
         <Toolbar>
           <Typography variant='h5' component="div" sx={{ flexGrow: 1, fontWeight: 'bold' }}>
@@ -31,18 +33,25 @@ const Navbar = () => {
               <Button
                 component={NavLink}
                 to='/'
-                activeClassName="active"
-                sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'white',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<HomeIcon />}
               >
                 Home
               </Button>
-
               <Button
                 component={NavLink}
                 to='/problem-set'
-                activeClassName="active"
-                sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'white',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<AssignmentIcon />}
               >
                 Problem Set
@@ -50,8 +59,12 @@ const Navbar = () => {
               <Button
                 component={NavLink}
                 to='/contest'
-                activeClassName="active"
-                sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'white',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<EmojiEventsIcon />}
               >
                 Contest
@@ -59,8 +72,12 @@ const Navbar = () => {
               <Button
                 component={NavLink}
                 to='/blogs'
-                activeClassName="active"
-                sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'white',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<ArticleIcon />}
               >
                 Blogs
@@ -68,8 +85,12 @@ const Navbar = () => {
               <Button
                 component={NavLink}
                 to='/global-chat'
-                activeClassName="active"
-                sx={{ color: 'yellow', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'yellow',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<ChatIcon />}
               >
                 Global Chat
@@ -77,18 +98,26 @@ const Navbar = () => {
               <Button
                 component={NavLink}
                 to='/contact'
-                activeClassName="active"
-                sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                sx={({ isActive }) => ({
+                  color: 'white',
+                  textTransform: 'none',
+                  marginRight: 2,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                })}
                 startIcon={<ContactMailIcon />}
               >
                 Contact
               </Button>
-              {cookie ? (
+              {isLoggedIn ? (
                 <Button
                   component={NavLink}
                   to='/dashboard'
-                  activeClassName="active"
-                  sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                  sx={({ isActive }) => ({
+                    color: 'white',
+                    textTransform: 'none',
+                    marginRight: 2,
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  })}
                   startIcon={<LoginIcon />}
                 >
                   Dashboard
@@ -97,8 +126,12 @@ const Navbar = () => {
                 <Button
                   component={NavLink}
                   to='/login'
-                  activeClassName="active"
-                  sx={{ color: 'white', textTransform: 'none', marginRight: 2 }}
+                  sx={({ isActive }) => ({
+                    color: 'white',
+                    textTransform: 'none',
+                    marginRight: 2,
+                    fontWeight: isActive ? 'bold' : 'normal',
+                  })}
                   startIcon={<LoginIcon />}
                 >
                   Login/Registration

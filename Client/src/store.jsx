@@ -1,17 +1,13 @@
-import { configureStore } from '@reduxjs/toolkit'
-
-import { setupListeners } from '@reduxjs/toolkit/query'
-import { userAuthApi } from './services/userAuthApi'
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import problemReducer from './features/problemSlice';
+import userReducer from './features/userSlice'; // Import the reducer
 
 export const store = configureStore({
   reducer: {
-    
-    [userAuthApi.reducerPath]: userAuthApi.reducer,
+    user: userReducer, // Assign the user reducer to the user slice
+    problem: problemReducer, // Assign the problem reducer to the problem slice
   },
- 
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(userAuthApi.middleware),
-})
+});
 
-
-setupListeners(store.dispatch)
+setupListeners(store.dispatch);

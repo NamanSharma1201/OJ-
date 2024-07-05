@@ -51,6 +51,11 @@ const problemSchema = new mongoose.Schema({
     min: 0,
     max: 100,
   },
+
+  correctSubmission: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const Problem = mongoose.model("Problem", problemSchema);

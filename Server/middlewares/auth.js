@@ -27,7 +27,7 @@ export const restrictToLoggedIn = async (req, res, next) => {
     }
 
     req.user = user; // Attach user to req object
-    console.log(user);
+
     next();
   } catch (error) {
     console.error("Error finding user:", error);

@@ -1,7 +1,7 @@
 import { Grid, TextField, Button, Box, Alert } from "@mui/material";
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useResetPasswordMutation } from "../../services/userAuthApi";
+import { resetPassword } from "../../services/userAuthApi";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const ResetPassword = () => {
     msg: "",
     type: ""
   });
-  const [resetPassword] = useResetPasswordMutation();
+
   const { id, token } = useParams();
 
   const handleSubmit = async (e) => {

@@ -1,44 +1,62 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import axios from "axios";
+axios.defaults.withCredentials = true
+const baseURL = "http://127.0.0.1:8000/api";
 
-export const userAuthApi = createApi({
-    reducerPath: 'userAuthApi',
-    baseQuery: fetchBaseQuery({ baseUrl: 'http://127.0.0.1:8000/api/user' }),
-    endpoints: (builder) => ({
-        registerUser: builder.mutation({
-            query: (user) => {
-                return {
-                    url: '/signup',
-                    method: 'POST',  // Corrected here
-                    body: user,
-                };
-            },
-        }),
-        loginUser: builder.mutation({
-            query: (user) => {
-                return {
-                    url: '/login',
-                    method: 'POST',
-                    body: user,
-                };
-            },
-        }),
-        sendPasswordResetEmail: builder.mutation({
-            query: (user) => {
-                return {
-                    url: '/reset-password',
-                    method: 'POST',
-                    body: user,
-                };
-            },
-        }),
-        resetPassword: builder.mutation({
-            query: ({ id, token, password }) => ({
-                url: `/reset/${id}/${token}`,
-                method: 'POST',
-                body: { password },
-            }),
-        })
-    }),
-});
+export const registerUser = async (user) => {
+    try {
+        const response = await axios.post(`${baseURL}/user/signup`, user, {
+            withCredentials: true,
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
 
-export const { useRegisterUserMutation, useLoginUserMutation, useSendPasswordResetEmailMutation, useResetPasswordMutation } = userAuthApi;
+export const loginUser = async (user) => {
+    try {
+        const response = await axios.post(`${baseURL}/user/login`, user, {
+            withCredentials: true,
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
+export const sendPasswordResetEmail = async (user) => {
+    try {
+        const response = await axios.post(`${baseURL}/user/reset-password`, user, {
+            withCredentials: true
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
+export const resetPassword = async ({ id, token, password }) => {
+    try {
+        const response = await axios.post(
+            `${baseURL}/user/reset/${id}/${token}`,
+            { password },
+            {
+                withCredentials: true,
+            }
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};
+
+export const changePassword = async (newPassword) => {
+    try {
+        const response = await axios.post(`${baseURL}/user/changepassword`, { newPassword }, {
+            withCredentials: true,
+        });
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};

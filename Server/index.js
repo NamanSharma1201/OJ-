@@ -12,11 +12,9 @@ const port = process.env.PORT || 8000;
 const app = express();
 connectDB();
 
-const corsOptions = {
-  credentials: true,
-};
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+// Handle preflight requests
 
-app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());

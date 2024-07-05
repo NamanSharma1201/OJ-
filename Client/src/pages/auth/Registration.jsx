@@ -1,53 +1,72 @@
 import { TextField, FormControlLabel, Checkbox, Button, Box, Alert } from '@mui/material';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useRegisterUserMutation } from '../../services/userAuthApi';
+import { registerUser } from '../../services/userAuthApi';
+import { useDispatch } from 'react-redux';
+import { setUser } from '../../features/userSlice';
 
 const Registration = () => {
-  const [registerUser, { isLoading }] = useRegisterUserMutation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const [isLoading, setIsLoading] = useState(false); // State to manage loading state
   const [error, setError] = useState({
     status: false,
     msg: "",
     type: ""
   });
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
+
     const data = new FormData(e.currentTarget);
     const actualData = {
       name: data.get('name'),
       email: data.get('email'),
       password: data.get('password'),
       password_confirmation: data.get('password_confirmation'),
-      tc: data.get('tc'),
+      tc: data.get('tc') === 'agree', // Check for the checkbox value
     };
 
-    if (actualData.name && actualData.email && actualData.password && actualData.password_confirmation && actualData.tc !== null) {
-      if (actualData.password === actualData.password_confirmation) {
-        try {
-          const res = await registerUser({ name: actualData.name, email: actualData.email, password: actualData.password }).unwrap();
+    try {
+      if (actualData.name && actualData.email && actualData.password && actualData.password_confirmation && actualData.tc) {
+        if (actualData.password === actualData.password_confirmation) {
+          const res = await registerUser({ name: actualData.name, email: actualData.email, password: actualData.password });
 
-          // Check response structure
+          // Assuming registerUser resolves with the user data or error message
 
-          // Set the cookie
-          document.cookie = `uid=${res.uid}`;
 
+          // Set the cookie (if needed, adjust as per your backend)
+          document.cookie = `uid=${res.uid}; path=/;`;
+
+          // Dispatch user data to Redux store
+          dispatch(setUser({ name: actualData.name, email: actualData.email }));
+
+          // Store user data in localStorage
+          localStorage.setItem('name', actualData.name);
+          localStorage.setItem('email', actualData.email);
+
+          // Trigger Navbar update
+          window.dispatchEvent(new Event('storage'));
+
+          // Display success message and redirect to dashboard
           setError({ status: true, msg: "Registration successful", type: 'success' });
           navigate('/dashboard');
-        } catch (error) {
-          console.error("Registration error:", error);
-          const errorMsg = error?.data?.message || "Registration failed. Please try again.";
-          setError({ status: true, msg: errorMsg, type: 'error' });
+        } else {
+          setError({ status: true, msg: "Password and Confirm Password Don't Match", type: 'error' });
         }
       } else {
-        setError({ status: true, msg: "Password and Confirm Password Doesn't Match", type: 'error' });
+        setError({ status: true, msg: "All Fields are Required", type: 'error' });
       }
-    } else {
-      setError({ status: true, msg: "All Fields are Required", type: 'error' });
+    } catch (error) {
+      console.error("Registration error:", error);
+      const errorMsg = error.message || "Registration failed. Please try again.";
+      setError({ status: true, msg: errorMsg, type: 'error' });
     }
-  };
 
+    setIsLoading(false); // Stop loading
+  };
 
   return (
     <Box component='form' noValidate sx={{ mt: 1 }} id='registration-form' onSubmit={handleSubmit}>

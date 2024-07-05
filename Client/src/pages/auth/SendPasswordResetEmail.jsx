@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, TextField, Button, Box, Alert, CircularProgress } from "@mui/material";
 import forgetPassImage from "../../images/forgetPass.png";
-import { useSendPasswordResetEmailMutation } from "../../services/userAuthApi";
+import { sendPasswordResetEmail } from "../../services/userAuthApi";
 
 const SendPasswordResetEmail = () => {
   const [error, setError] = useState({
@@ -10,7 +10,7 @@ const SendPasswordResetEmail = () => {
     type: ""
   });
   const [loading, setLoading] = useState(false); // State to manage loading state
-  const [sendPasswordResetEmail] = useSendPasswordResetEmailMutation();
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -34,8 +34,8 @@ class UserController {
 
       const token = await setUser(user);
       res.cookie("uid", token, {
-        httpOnly: true,
         secure: true,
+        sameSite: "none",
       });
 
       return res.json({ message: "Registration successful", uid: token });
@@ -66,11 +66,16 @@ class UserController {
 
       const token = await setUser(user);
       res.cookie("uid", token, {
-        httpOnly: true,
+        sameSite: "none",
         secure: true,
       });
 
-      return res.json({ message: "Login successful", uid: token });
+      return res.json({
+        message: "Login successful",
+        uid: token,
+        name: user.name,
+        email: user.email,
+      });
     } catch (error) {
       return res.status(500).json({ message: "Login Failed" });
     }
@@ -144,7 +149,7 @@ class UserController {
           await user.save();
 
           req.body.password = undefined;
-          return res.redirect("/api/user/login");
+          return res.status(200).json({ message: "success" });
         } else {
           return res.status(401).json({ message: "Invalid request" });
         }
@@ -155,28 +160,24 @@ class UserController {
   };
 
   static changeUserPassword = async (req, res) => {
-    const { oldPassword, newPassword } = req.body;
+    const { newPassword } = req.body;
+    console.log(newPassword);
     const userID = req.user.id; // Assuming the user ID is stored in req.user
 
-    if (!oldPassword || !newPassword) {
+    if (!newPassword) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     try {
       const user = await User.findById(userID);
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res.status(404).json({ message: "User not Authorized" });
       }
 
-      const isPasswordValid = await validatePassword(
-        oldPassword,
-        user.password
-      );
-      if (!isPasswordValid) {
-        return res.status(401).json({ message: "Incorrect old password" });
-      }
+      // console.log(user.password);
 
       user.password = await hashPassword(newPassword);
+      // console.log(user.password);
       await user.save();
 
       return res.json({ message: "Password changed successfully" });
