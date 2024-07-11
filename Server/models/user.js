@@ -19,6 +19,16 @@ const userSchema = new mongoose.Schema({
     enum: ["user", "admin"],
     default: "user",
   },
+  problemsSolved: {
+    type: [Number],
+    default: [],
+    validate: {
+      validator: function (array) {
+        return array.length === new Set(array).size;
+      },
+      message: "Problems solved must contain unique values",
+    },
+  },
 });
 
 const User = mongoose.model("User", userSchema);

@@ -41,7 +41,7 @@ const Registration = () => {
           document.cookie = `uid=${res.uid}; path=/;`;
 
           // Dispatch user data to Redux store
-          dispatch(setUser({ name: actualData.name, email: actualData.email }));
+          dispatch(setUser({ name: actualData.name, email: actualData.email, problemsSolved: [] }));
 
           // Store user data in localStorage
           localStorage.setItem('name', actualData.name);

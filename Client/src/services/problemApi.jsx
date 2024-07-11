@@ -26,3 +26,25 @@ export const getProblemById = async (problemId) => {
         throw error;
     }
 }
+export const createProblem = async (problem) => {
+    try {
+        console.log(problem);
+        const response = await axios.post(`${baseURL}/create`, problem);
+        return response.data;
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const updateProblemStats = async (problemID, submissions, accuracy, correctSubmission) => {
+    try {
+        // console.log(problemID, submissions, accuracy, correctSubmission);
+        const response = await axios.patch(
+            `${baseURL}/update/${problemID}`,
+            { problemID, submissions, accuracy, correctSubmission }
+        );
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
+    }
+};

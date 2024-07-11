@@ -5,25 +5,26 @@ const baseURL = "http://localhost:5000/api";
 
 export const runCode = async (language, code, input) => {
     try {
-        const output = await axios.post(
+        const response = await axios.post(
             `${baseURL}/run`,
-            { code: code, language: language, input: input }
+            { code, language, input }
         );
-        return output.data;
-    } catch (e) {
-        throw e.response.data;
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
     }
-}
+};
 
-
-export const submitCode = async (language, code, input) => {
+export const submitCode = async (language, code, hiddenInputs, hiddenOutputs) => {
     try {
-        const output = await axios.post(
+        const response = await axios.post(
             `${baseURL}/submit`,
-            { code: code, language: language, input: input }
+            { inputs: hiddenInputs, outputs: hiddenOutputs, code, language }
         );
-        return output.data;
-    } catch (e) {
-        throw e.response.data;
+        return response.data;
+    } catch (error) {
+        throw error.response.data;
     }
-}
+};
+
+

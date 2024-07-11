@@ -35,7 +35,7 @@ const UserLogin = () => {
         // Dispatch the user data to the Redux store
         // Set the cookie
         document.cookie = `uid=${response.data.uid}`;
-        dispatch(setUser({ name: response.data.name, email: response.data.email }));
+        dispatch(setUser({ name: response.data.name, email: response.data.email, problemsSolved: response.data.problemsSolved }));
         localStorage.setItem('name', response.data.name);
         localStorage.setItem('email', response.data.email);
         window.dispatchEvent(new Event('storage')); // Trigger event to update components that depend on user state

@@ -5,6 +5,28 @@ import { validatePassword, hashPassword } from "../services/pass.js";
 import transporter from "../services/mail.js"; // Note the correction from 'tranporter' to 'transporter'
 
 class UserController {
+  static updateSolvedProblems = async function (req, res) {
+    const { email, problemID } = req.body;
+    try {
+      const user = await User.findOne({ email: email });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      if (user.problemsSolved.includes(problemID)) {
+        return res.send(user.problemsSolved);
+      }
+
+      user.problemsSolved.push(problemID);
+
+      await user.save();
+
+      return res.send(user.problemsSolved);
+    } catch (error) {
+      return res.status(500).json({ message: "Something went wrong" });
+    }
+  };
+
   static userLogout = async (req, res) => {
     res.clearCookie("uid");
     res.redirect("/api/login");
@@ -75,6 +97,7 @@ class UserController {
         uid: token,
         name: user.name,
         email: user.email,
+        problemsSolved: user.problemsSolved,
       });
     } catch (error) {
       return res.status(500).json({ message: "Login Failed" });

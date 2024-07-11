@@ -25,7 +25,7 @@ const problemSchema = new mongoose.Schema({
   },
   difficulty: {
     type: String,
-    enum: ["easy", "medium", "hard"],
+    enum: ["Easy", "Medium", "Hard"],
     required: true,
   },
   topic: {
@@ -35,11 +35,6 @@ const problemSchema = new mongoose.Schema({
   askedIn: {
     type: String,
     required: false,
-  },
-  author: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-    required: true,
   },
   submissions: {
     type: Number,
@@ -51,10 +46,17 @@ const problemSchema = new mongoose.Schema({
     min: 0,
     max: 100,
   },
-
   correctSubmission: {
     type: Number,
     default: 0,
+  },
+  hiddenInputs: {
+    type: [String],
+    default: [],
+  },
+  hiddenOutputs: {
+    type: [String],
+    default: [],
   },
 });
 

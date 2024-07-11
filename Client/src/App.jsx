@@ -7,10 +7,12 @@ import LoginReg from "./pages/auth/LoginReg";
 import SendPasswordResetEmail from "./pages/auth/SendPasswordResetEmail";
 import ResetPassword from "./pages/auth/ResetPassword";
 
-import Dashboard from "./pages/Dashboard"; // Assuming Dashboard is exported correctly
+import Dashboard from "./pages/Dashboard";
 import Problems from "./pages/Problems";
 import './styles.css';
 import SolveProblem from "./pages/SolveProblem";
+import CreateProblem from "./pages/CreateProblem";
+
 function App() {
   return (
     <BrowserRouter>
@@ -22,13 +24,12 @@ function App() {
           <Route path="sendpasswordresetemail" element={<SendPasswordResetEmail />} />
           <Route path="reset/:id/:token" element={<ResetPassword />} />
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="create-problem" element={<CreateProblem />} />
+
           <Route path="problem-set" element={<Problems />} />
-          <Route path="/problem/:id" element={<SolveProblem />} />
-
-
+          <Route path="problem/:id" element={<SolveProblem />} />
+          <Route path="*" element={<h1>404 Not Found</h1>} />
         </Route>
-        <Route path="*" element={<h1>404 Not Found</h1>} />
-
       </Routes>
     </BrowserRouter>
   );

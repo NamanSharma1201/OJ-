@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { runCode, submitCode } from '../services/codeApi';
+import { useSelector, useDispatch } from 'react-redux';
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/mode-python';
@@ -16,7 +15,11 @@ import {
     Paper,
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
-import axios from 'axios';
+import { runCode, submitCode } from '../services/codeApi'; // Adjust the path as per your project structure
+import { setProblem } from '../features/problemSlice';
+import { updateProblemStats } from '../services/problemApi';
+import { updateSolvedProblems } from '../services/updateUser';
+import { setSolvedProblems } from '../features/userSlice';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
     padding: theme.spacing(2),
@@ -55,7 +58,15 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
 }));
 
 const CodeEditor = () => {
-    const [language, setLanguage] = useState('javascript');
+    const email = localStorage.getItem('email');
+    const hiddenInputs = useSelector(state => state.problem.hiddenInputs);
+    const hiddenOutputs = useSelector(state => state.problem.hiddenOutputs);
+    const problemID = useSelector(state => state.problem.problemID);
+    const submissions = useSelector(state => state.problem.submissions);
+    const accuracy = useSelector(state => state.problem.accuracy);
+    const correctSubmission = useSelector(state => state.problem.correctSubmission);
+    const dispatch = useDispatch();
+    const [language, setLanguage] = useState('cpp');
     const [code, setCode] = useState('// Write your code here');
     const [input, setInput] = useState('');
     const [output, setOutput] = useState('');
@@ -85,7 +96,6 @@ const CodeEditor = () => {
     const handleRun = async () => {
         try {
             const response = await runCode(getExtension(language), code, input);
-            console.log(response);
             setOutput(response);
         } catch (error) {
             setOutput(`Error running code: ${error.message}`);
@@ -94,8 +104,27 @@ const CodeEditor = () => {
 
     const handleSubmit = async () => {
         try {
-            const response = await submitCode(getExtension(language), code, input);
-            setOutput(response.data.output);
+            const response = await submitCode(getExtension(language), code, hiddenInputs, hiddenOutputs);
+            console.log(response);
+            const isAccepted = response === 'ACCEPTED';
+
+            dispatch(setProblem({
+                problemID: problemID,
+                submissions: submissions + 1,
+                correctSubmission: correctSubmission + (isAccepted ? 1 : 0),
+                hiddenInputs: hiddenInputs,
+                hiddenOutputs: hiddenOutputs,
+            }));
+
+            let res = await updateProblemStats(problemID, submissions, accuracy, correctSubmission);
+
+            if (isAccepted) {
+                res = await updateSolvedProblems(email, problemID);
+
+                dispatch(setSolvedProblems(res));
+            }
+
+            setOutput(response);
         } catch (error) {
             setOutput(`Error submitting code: ${error.message}`);
         }
@@ -124,25 +153,23 @@ const CodeEditor = () => {
                 fontSize={16}
             />
 
-            <Box mt={2} />
-
             <Box mt={2} display="flex" justifyContent="space-between">
                 <StyledTextField
                     label="Input"
                     multiline
-                    rows={3} // Increased to 3 lines for a bigger input field
+                    rows={3}
                     variant="outlined"
                     fullWidth
                     value={input}
                     onChange={handleInputChange}
                 />
 
-                <Box width={16} /> {/* Adds a 16px gap between input and output */}
+                <Box width={16} />
 
                 <StyledTextField
                     label="Output"
                     multiline
-                    rows={3} // Increased to 3 lines for a bigger output field
+                    rows={3}
                     variant="outlined"
                     fullWidth
                     value={output}

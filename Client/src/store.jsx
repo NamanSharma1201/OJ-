@@ -5,8 +5,8 @@ import userReducer from './features/userSlice'; // Import the reducer
 
 export const store = configureStore({
   reducer: {
-    user: userReducer, // Assign the user reducer to the user slice
-    problem: problemReducer, // Assign the problem reducer to the problem slice
+    user: userReducer,
+    problem: problemReducer,
   },
 });
 

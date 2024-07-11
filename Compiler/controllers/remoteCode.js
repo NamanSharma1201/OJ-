@@ -11,22 +11,26 @@ const __dirname = path.dirname(__filename);
 export const executeCodeRemote = async (req, res) => {
   const { language, code, input } = req.body;
   if (!code || !language) {
-    res.status(401).send({ message: "Invalid Request" });
+    return res.send({ message: "Invalid Request" });
   }
 
-  const inputPath = path.join(__dirname, "../Remote/Inputs");
-  const codePath = path.join(__dirname, "../Remote/Codes");
-  const executablePath = path.join(__dirname, "../Remote/Executables");
+  const inputPath = path.join(__dirname, "../Remote/Inputs", language);
+  const codePath = path.join(__dirname, "../Remote/Codes", language);
+  const executablePath = path.join(
+    __dirname,
+    "../Remote/Executables",
+    language
+  );
   const id = uuid();
 
   const inputFile = path.join(inputPath, `${id}.txt`);
   const codeFile = path.join(codePath, `${id}.${language}`);
   const executableFile = path.join(executablePath, `${id}.exe`);
+  let javaFileName;
 
   try {
     fs.writeFileSync(inputFile, input);
 
-    let javaFileName;
     if (language === "java") {
       const className = code.match(/class\s+(\w+)/)[1];
       javaFileName = `${className}.java`;
@@ -111,8 +115,8 @@ export const executeCodeRemote = async (req, res) => {
     res.send(err.stderr ? err.stderr : err);
   } finally {
     try {
-      const filesToDelete = [codeFile, inputFile];
-      if (language === "java") {
+      const filesToDelete = [codeFile, inputFile, executableFile];
+      if (language === "java" && javaFileName) {
         filesToDelete.push(path.join(codePath, javaFileName));
         filesToDelete.push(
           path.join(codePath, javaFileName.replace(".java", ".class"))
@@ -133,7 +137,7 @@ async function killAllChildProcesses(pid) {
   return new Promise((resolve, reject) => {
     psTree(pid, (err, children) => {
       if (err) {
-        console.error("Error finding child processes:", err);
+        // console.error("Error finding child processes:", err);
         return reject(err);
       }
       [pid, ...children.map((p) => p.PID)].forEach((tpid) => {
@@ -147,3 +151,38 @@ async function killAllChildProcesses(pid) {
     });
   });
 }
+export const submitCodeRemote = async (req, res) => {
+  const { language, code, inputs, outputs } = req.body;
+  if (!language || !code || !inputs || !outputs) {
+    return res.send("Invalid Request");
+  }
+
+  try {
+    for (let i = 0; i < inputs.length; i++) {
+      const output = await new Promise((resolve, reject) => {
+        const dummyReq = {
+          body: { language, code, input: inputs[i] },
+        };
+
+        const dummyRes = {
+          send: (result) => {
+            resolve(result);
+          },
+        };
+
+        executeCodeRemote(dummyReq, dummyRes).catch(reject);
+      });
+
+      // Trim whitespace and newlines from the output and the expected output
+
+      if (output.trim() !== outputs[i].trim()) {
+        return res.send(`WRONG ANSWER at TestCase ${i + 1}`);
+      }
+    }
+
+    res.send("ACCEPTED");
+  } catch (error) {
+    console.error("Error submitting code:", error);
+    res.send("Internal Server Error");
+  }
+};

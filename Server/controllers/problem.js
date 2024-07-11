@@ -13,41 +13,42 @@ export const createNewProblem = async (req, res) => {
   const problem = req.body;
   const problemCount = await Problem.countDocuments({});
 
-  if (
-    !problem.title ||
-    !problem.description ||
-    !problem.inputFormat ||
-    !problem.outputFormat ||
-    !problem.difficulty ||
-    !problem.topic ||
-    !problem.author
-  ) {
-    return res.status(400).json({ message: "All fields are required" });
-  }
-  if (
-    problem.difficulty !== "easy" &&
-    problem.difficulty !== "medium" &&
-    problem.difficulty !== "hard"
-  ) {
-    return res.status(400).json({ message: "Invalid difficulty level" });
-  }
+  // if (
+  //   !problem.title ||
+  //   !problem.description ||
+  //   !problem.inputFormat ||
+  //   !problem.outputFormat ||
+  //   !problem.difficulty ||
+  //   !problem.topic ||
+  //   !problem.author
+  // ) {
+  //   return res.status(400).json({ message: "All fields are required" });
+  // }
+  // if (
+  //   problem.difficulty !== "easy" &&
+  //   problem.difficulty !== "medium" &&
+  //   problem.difficulty !== "hard"
+  // ) {
+  //   return res.status(400).json({ message: "Invalid difficulty level" });
+  // }
 
-  const duplicateProblem = await Problem.findOne({
-    title: problem.title,
-    description: problem.description,
-    inputFormat: problem.inputFormat,
-    outputFormat: problem.outputFormat,
-  });
+  // const duplicateProblem = await Problem.findOne({
+  //   title: problem.title,
+  //   description: problem.description,
+  //   inputFormat: problem.inputFormat,
+  //   outputFormat: problem.outputFormat,
+  // });
 
-  if (duplicateProblem) {
-    return res.status(400).json({ message: "This problem already exists" });
-  }
+  // if (duplicateProblem) {
+  //   return res.status(400).json({ message: "This problem already exists" });
+  // }
 
   try {
     const newProblem = await Problem.create({
       problemID: problemCount + 1,
       ...problem,
     });
+    // console.log("success", newProblem);
     return res.status(201).json(newProblem);
   } catch (error) {
     console.error("Error creating problem:", error);
@@ -65,6 +66,28 @@ export const getProblemById = async (req, res) => {
     return res.json(problem);
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const updateProblemStats = async (req, res) => {
+  const { problemID, submissions, accuracy, correctSubmission } = req.body;
+  if (!problemID || !submissions || !accuracy || !correctSubmission) {
+    return res.send("Invalid Request");
+  }
+  // console.log(correctSubmission);
+
+  const problem = await Problem.findOne({ problemID: problemID });
+  if (!problem) {
+    return res.status(404).json({ message: "Problem not found" });
+  }
+  try {
+    problem.submissions = submissions;
+    problem.accuracy = accuracy;
+    problem.correctSubmission = correctSubmission;
+    await problem.save();
+    return res.send("Problem Updated");
+  } catch (error) {
+    return res.status(500).send("Something Went Wrong");
   }
 };
 

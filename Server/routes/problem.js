@@ -5,6 +5,7 @@ import {
   getProblemById,
   editProblem,
   deleteProblem,
+  updateProblemStats,
 } from "../controllers/problem.js";
 
 import { restrictToAdmin } from "../middlewares/problem.js";
@@ -12,9 +13,10 @@ import { restrictToAdmin } from "../middlewares/problem.js";
 const problemRouter = express.Router();
 
 problemRouter.get("/all", getAllProblems);
-problemRouter.post("/create", restrictToAdmin, createNewProblem);
+problemRouter.post("/create", createNewProblem);
 problemRouter.get("/:id", getProblemById);
-problemRouter.patch("/:id", restrictToAdmin, editProblem);
-problemRouter.delete("/:id", restrictToAdmin, deleteProblem);
+problemRouter.patch("/update/:id", updateProblemStats);
+problemRouter.patch("/:id", editProblem);
+problemRouter.delete("/:id", deleteProblem);
 
 export default problemRouter;

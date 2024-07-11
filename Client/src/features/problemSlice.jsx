@@ -5,8 +5,10 @@ const initialState = {
     submissions: 0,
     accuracy: 0,
     correctSubmission: 0,
+    hiddenInputs: [],
+    hiddenOutputs: [],
+};
 
-}
 const problemSlice = createSlice({
     name: 'problem',
     initialState,
@@ -14,8 +16,10 @@ const problemSlice = createSlice({
         setProblem: (state, action) => {
             state.problemID = action.payload.problemID;
             state.submissions = action.payload.submissions;
-            state.accuracy = action.payload.accuracy;
             state.correctSubmission = action.payload.correctSubmission;
+            state.accuracy = state.submissions > 0 ? (state.correctSubmission / state.submissions) * 100 : 0;
+            state.hiddenInputs = action.payload.hiddenInputs;
+            state.hiddenOutputs = action.payload.hiddenOutputs;
         }
     }
 });
