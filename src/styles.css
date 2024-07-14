@@ -1,0 +1,93 @@
+/* globalStyles.css */
+
+body {
+    /* Gradient background */
+    /* background: linear-gradient(to bottom right, #ffffff, #a8c1f0); */
+    /* Ensure full height */
+    min-height: 100vh;
+    /* Remove default margin */
+    margin: 0;
+    /* Apply font styles or other global styles */
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+}
+
+.split {
+    display: flex;
+    flex-direction: row;
+}
+
+.gutter {
+    background-color: #eee;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAeCAYAAADkftS9AAAAIklEQVQoU2M4c+bMfxAGAgYYmwGrIIiDjrELjpo5aiZeMwF+yNnOs5KSvgAAAABJRU5ErkJggg==');
+    cursor: col-resize;
+}
+
+/* Hide the initial "1" line number at the top */
+
+
+/* .CodeMirror-linenumber.CodeMirror-gutter-elt {
+    padding-bottom: 1400vh;
+} */
+
+/* Adjust the padding of the CodeMirror editor */
+
+.CodeMirror {
+    padding-top: 0 !important;
+    height: auto;
+}
+
+/* Ensure the content starts at the top */
+
+.CodeMirror-lines {
+    padding-top: 0 !important;
+}
+
+.create-problem-form {
+    display: flex;
+    flex-direction: column;
+    width: 80%;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.form-input,
+.form-select,
+.quill-editor {
+    margin: 10px 0;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 100%;
+    font-size: 16px;
+}
+
+.add-button {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.submit-button {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #28a745;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Add more styles as needed */
