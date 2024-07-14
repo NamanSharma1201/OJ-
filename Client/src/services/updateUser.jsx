@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const baseURL = "http://127.0.0.1:8000/api/user";
+const baseURL = import.meta.env.VITE_USER_BASE_URL;
 
 export const updateSolvedProblems = async (email, problemID) => {
     try {

@@ -113,7 +113,7 @@ const CreateProblem = () => {
         };
 
         try {
-            const response = await createProblem(sanitizedProblem);
+            const response = await createProblem(problem);
             console.log('Problem created:', sanitizedProblem);
             setSnackbar({ open: true, message: 'Problem created successfully!', severity: 'success' });
         } catch (error) {

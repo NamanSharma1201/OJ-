@@ -1,15 +1,29 @@
 import React, { useEffect, useState } from 'react';
-import { Button, CssBaseline, Grid, Typography } from '@mui/material';
+import { Button, CssBaseline, Grid, Typography, Box, Paper, Container, Snackbar } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ChangePassword from './auth/ChangePassword';
 import { unsetUser } from '../features/userSlice';
+import { styled } from '@mui/material/styles';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LockIcon from '@mui/icons-material/Lock';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+
+const StyledPaper = styled(Paper)(({ theme }) => ({
+  padding: theme.spacing(4),
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  height: '100%',
+  backgroundColor: theme.palette.background.default,
+}));
 
 const Dashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [showAdminBanner, setShowAdminBanner] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
 
-  // Custom hook logic for local storage
   const useLocalStorage = (key) => {
     const [value, setValue] = useState(localStorage.getItem(key));
 
@@ -27,60 +41,112 @@ const Dashboard = () => {
     return value;
   };
 
-  const name = useLocalStorage('name'); // Use custom hook
-  const email = useLocalStorage('email'); // Use custom hook
+  const name = useLocalStorage('name');
+  const email = useLocalStorage('email');
+  const role = useLocalStorage('role');
 
   useEffect(() => {
     if (!name) {
-      console.log("move to login");
       navigate('/login');
     }
-  }, [name, navigate]); // Add `name` and `navigate` to the dependency array
+  }, [name, navigate]);
 
   const handleLogout = () => {
-    // Clear cookies if necessary
     document.cookie = 'uid=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;';
-
-    // Clear localStorage
     localStorage.removeItem('name');
     localStorage.removeItem('email');
-
-    // Dispatch action to unset user in Redux store
+    localStorage.removeItem('role');
     dispatch(unsetUser());
-
-    // Navigate to the login page
     navigate('/login');
   };
 
+  const handleCreateProblem = () => {
+    if (role === 'admin') {
+      navigate('/create-problem');
+    } else {
+      setShowAdminBanner(true);
+    }
+  };
+
+  const handleChangePassword = () => {
+    setShowChangePassword(!showChangePassword);
+  };
+
   return (
-    <>
+    <Container component="main" maxWidth="lg">
       <CssBaseline />
-      <Grid container>
-        <Grid item sm={4} sx={{ backgroundColor: 'gray', p: 5, color: 'white' }}>
-          <Typography variant='h4' gutterBottom>
-            Dashboard
-          </Typography>
-          <Typography variant='h6' gutterBottom>
-            Email: {email || 'Not Available'}
-          </Typography>
-          <Typography variant='body1' gutterBottom>
-            Name: {name || 'Not Available'}
-          </Typography>
-          <Button
-            variant='contained'
-            color='primary' // Change to appropriate color
-            size='large'
-            onClick={handleLogout}
-            sx={{ mt: 2 }}
-          >
-            Logout
-          </Button>
+      <Box sx={{ mt: 8, mb: 4 }}>
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <StyledPaper elevation={3}>
+              <Typography variant="h4" gutterBottom>
+                Dashboard
+              </Typography>
+              <Box sx={{ mt: 2, mb: 4, textAlign: 'center' }}>
+                <Typography variant="h6" gutterBottom>
+                  {name || 'Not Available'}
+                </Typography>
+                <Typography variant="body1" color="textSecondary">
+                  {email || 'Not Available'}
+                </Typography>
+                <Typography variant="body2" color="textSecondary">
+                  Role: {role || 'Not Available'}
+                </Typography>
+              </Box>
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                startIcon={<LogoutIcon />}
+                onClick={handleLogout}
+                sx={{ mt: 2 }}
+              >
+                Logout
+              </Button>
+            </StyledPaper>
+          </Grid>
+          <Grid item xs={12} md={8}>
+            <StyledPaper elevation={3}>
+              <Typography variant="h5" gutterBottom>
+                Actions
+              </Typography>
+              <Box sx={{ width: '100%', mt: 2 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<LockIcon />}
+                  sx={{ mb: 2 }}
+                  onClick={handleChangePassword}
+                >
+                  {showChangePassword ? 'Hide Change Password' : 'Change Password'}
+                </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<AddCircleIcon />}
+                  onClick={handleCreateProblem}
+                >
+                  Create New Problem
+                </Button>
+              </Box>
+              {showChangePassword && (
+                <Box sx={{ mt: 4, width: '100%' }}>
+                  <ChangePassword />
+                </Box>
+              )}
+            </StyledPaper>
+          </Grid>
         </Grid>
-        <Grid item sm={8}>
-          <ChangePassword />
-        </Grid>
-      </Grid>
-    </>
+      </Box>
+      <Snackbar
+        open={showAdminBanner}
+        autoHideDuration={6000}
+        onClose={() => setShowAdminBanner(false)}
+        message="You are not an admin. Access denied."
+      />
+    </Container>
   );
 };
 

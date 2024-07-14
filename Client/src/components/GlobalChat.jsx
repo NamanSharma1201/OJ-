@@ -5,8 +5,8 @@ import LockIcon from '@mui/icons-material/Lock';
 import SendIcon from '@mui/icons-material/Send';
 import { NavLink } from 'react-router-dom';
 import io from 'socket.io-client';
-
-const socket = io('http://localhost:8000');
+import NotLogin from './NotLogin';
+const socket = io(import.meta.env.VITE_IO_BASE_URL);
 
 const GlobalChat = ({ onClose }) => {
     const [message, setMessage] = useState('');
@@ -14,7 +14,6 @@ const GlobalChat = ({ onClose }) => {
         const storedMessages = localStorage.getItem('globalChatMessages');
         return storedMessages ? JSON.parse(storedMessages) : [];
     });
-    const [unreadCount, setUnreadCount] = useState(0); // Track unread messages
     const name = localStorage.getItem('name');
     const chatContainerRef = useRef(null);
 
@@ -25,11 +24,6 @@ const GlobalChat = ({ onClose }) => {
                 localStorage.setItem('globalChatMessages', JSON.stringify(newMessages)); // Save messages to local storage
                 return newMessages;
             });
-
-            // Update unread count
-            if (!document.hasFocus() || !document.hidden) { // Check if the document is not focused or visible
-                setUnreadCount((prevCount) => prevCount + 1);
-            }
 
             // Scroll to bottom of chat messages
             if (chatContainerRef.current) {
@@ -97,7 +91,43 @@ const GlobalChat = ({ onClose }) => {
                     </Paper>
                 ))}
             </Box>
-            {name ? (
+            {!name && (
+                <Box
+                    sx={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        bgcolor: 'rgba(248, 249, 250, 0.9)',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        flexDirection: 'column',
+                        color: '#212529',
+                        textAlign: 'center',
+                        p: 2,
+                    }}
+                >
+                    <LockIcon sx={{ fontSize: 60, color: '#ffc107' }} />
+                    <Typography variant="h6" sx={{ mb: 2 }}>Please log in to unlock the chat</Typography>
+                    <Button
+                        variant="contained"
+                        component={NavLink}
+                        to="/login"
+                        onClick={handleLoginClick}
+                        sx={{
+                            bgcolor: '#007bff',
+                            '&:hover': { bgcolor: '#0056b3' },
+                            borderRadius: '25px',
+                            px: 3,
+                        }}
+                    >
+                        Login / Register
+                    </Button>
+                </Box>
+            )}
+            {name && (
                 <Box sx={{ p: 2, bgcolor: '#e9ecef' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         <TextField
@@ -120,41 +150,6 @@ const GlobalChat = ({ onClose }) => {
                             <SendIcon />
                         </IconButton>
                     </Box>
-                </Box>
-            ) : (
-                <Box
-                    sx={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        bgcolor: 'rgba(248, 249, 250, 0.9)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        flexDirection: 'column',
-                        color: '#212529',
-                        textAlign: 'center',
-                        p: 2,
-                    }}
-                >
-                    <LockIcon sx={{ fontSize: 60, color: '#ffc107' }} />
-                    <Typography variant="h6" sx={{ mb: 2, color: '#212529' }}>Please log in to unlock the chat</Typography>
-                    <Button
-                        variant="contained"
-                        component={NavLink}
-                        to="/login"
-                        onClick={handleLoginClick}
-                        sx={{
-                            bgcolor: '#007bff',
-                            '&:hover': { bgcolor: '#0056b3' },
-                            borderRadius: '25px',
-                            px: 3,
-                        }}
-                    >
-                        Login / Register
-                    </Button>
                 </Box>
             )}
         </Box>

@@ -85,6 +85,11 @@ const ProblemDescription = ({ id }) => {
         </Box>
     );
 
+    // Function to safely parse HTML content
+    const createMarkup = (htmlContent) => {
+        return { __html: htmlContent };
+    };
+
     return (
         <FullHeightPaper elevation={3}>
             <CursiveHeading variant="h3">{problem.title}</CursiveHeading>
@@ -98,13 +103,13 @@ const ProblemDescription = ({ id }) => {
 
             <Box flex={1} overflow="auto">
                 <SectionTitle variant="h6">Description</SectionTitle>
-                <Typography variant="body1" paragraph>{problem.description}</Typography>
+                <Typography variant="body1" paragraph dangerouslySetInnerHTML={createMarkup(problem.description)} />
 
                 <SectionTitle variant="h6">Input Format</SectionTitle>
-                <Typography variant="body1" paragraph>{problem.inputFormat}</Typography>
+                <Typography variant="body1" paragraph dangerouslySetInnerHTML={createMarkup(problem.inputFormat)} />
 
                 <SectionTitle variant="h6">Output Format</SectionTitle>
-                <Typography variant="body1" paragraph>{problem.outputFormat}</Typography>
+                <Typography variant="body1" paragraph dangerouslySetInnerHTML={createMarkup(problem.outputFormat)} />
             </Box>
 
             <Divider />

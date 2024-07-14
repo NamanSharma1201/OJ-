@@ -1,7 +1,7 @@
 import axios from "axios";
 axios.defaults.withCredentials = true;
 
-const baseURL = "http://localhost:5000/api";
+const baseURL = import.meta.env.VITE_CODE_BASE_URL;
 
 export const runCode = async (language, code, input) => {
     try {

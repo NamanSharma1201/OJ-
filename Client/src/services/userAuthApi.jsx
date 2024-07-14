@@ -1,6 +1,6 @@
 import axios from "axios";
 axios.defaults.withCredentials = true
-const baseURL = "http://127.0.0.1:8000/api";
+const baseURL = import.meta.env.VITE_LOGIN_BASE_URL;
 
 export const registerUser = async (user) => {
     try {
@@ -13,9 +13,9 @@ export const registerUser = async (user) => {
     }
 };
 
-export const loginUser = async (user) => {
+export const loginUser = async ({ email, password }) => {
     try {
-        const response = await axios.post(`${baseURL}/user/login`, user, {
+        const response = await axios.post(`${baseURL}/user/login`, { email: email, password: password }, {
             withCredentials: true,
         });
         return response.data;

@@ -3,7 +3,7 @@ import axios from "axios";
 axios.defaults.withCredentials = true;
 
 
-const baseURL = "http://127.0.0.1:8000/api/problem";
+const baseURL = import.meta.env.VITE_PROBLEM_BASE_URL;
 
 
 export const getAllProblems = async () => {

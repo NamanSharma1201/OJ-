@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Box, TextField, Button, CircularProgress, Alert } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { setUser } from '../../features/userSlice';
+import { loginUser } from "../../services/userAuthApi";
 
 const UserLogin = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,17 +27,14 @@ const UserLogin = () => {
       };
 
       if (actualData.email && actualData.password) {
-        const response = await axios.post('http://127.0.0.1:8000/api/user/login', actualData, { withCredentials: true });
+        const response = await loginUser({ email: actualData.email, password: actualData.password });
 
         // Set the cookie if received in response (handled by browser)
-        // Note: You don't manually set cookies in modern frontend applications due to security restrictions
-
-        // Dispatch the user data to the Redux store
-        // Set the cookie
-        document.cookie = `uid=${response.data.uid}`;
-        dispatch(setUser({ name: response.data.name, email: response.data.email, problemsSolved: response.data.problemsSolved }));
-        localStorage.setItem('name', response.data.name);
-        localStorage.setItem('email', response.data.email);
+        document.cookie = `uid=${response.uid}`;
+        dispatch(setUser({ name: response.name, email: response.email, problemsSolved: response.problemsSolved }));
+        localStorage.setItem('name', response.name);
+        localStorage.setItem('email', response.email);
+        localStorage.setItem('role', response.role);
         window.dispatchEvent(new Event('storage')); // Trigger event to update components that depend on user state
 
         e.target.reset();
