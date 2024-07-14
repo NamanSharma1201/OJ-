@@ -98,6 +98,7 @@ class UserController {
         name: user.name,
         email: user.email,
         problemsSolved: user.problemsSolved,
+        role: user.role,
       });
     } catch (error) {
       return res.status(500).json({ message: "Login Failed" });

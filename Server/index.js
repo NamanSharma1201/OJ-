@@ -7,7 +7,8 @@ import { Server } from "socket.io";
 import connectDB from "./config/connectDB.js";
 import userRouter from "./routes/user.js";
 import problemRouter from "./routes/problem.js";
-
+import commentRouter from "./routes/comments.js";
+import blogRouter from "./routes/blogs.js";
 dotenv.config();
 
 const port = process.env.PORT || 8000;
@@ -15,20 +16,22 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CLIENT_URL,
     methods: ["GET", "POST"],
   },
 });
 
 connectDB();
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/user", userRouter);
 app.use("/api/problem", problemRouter);
+app.use("/blog", blogRouter);
+app.use("/comment", commentRouter);
 
 // Socket.io connection
 io.on("connection", (socket) => {
