@@ -12,6 +12,17 @@ This is a **Robust and Scalable Online Judge** built using a **microservice arch
 - **Global Chat**: Real-time messaging using **Socket.io** for discussions.
 - **LeetCode-like UI**: Aesthetic frontend built with **React, Redux, and Material-UI**.
 - **Persistent State Management**: Uses **redux-persist** for seamless user experience.
+![image](https://github.com/user-attachments/assets/5fd51bbf-5a7c-425d-980f-bda72a70865b)
+![image](https://github.com/user-attachments/assets/4bf60d00-5bb5-41e1-b237-1055433c2008)
+![image](https://github.com/user-attachments/assets/ba802e06-c324-4d5a-ac7c-41ec7be0c469)
+![image](https://github.com/user-attachments/assets/02c2479e-c92d-4d93-9571-a50a6109a1a0)
+![image](https://github.com/user-attachments/assets/749627b0-a2d4-48d9-9612-0aa6977763d1)
+![image](https://github.com/user-attachments/assets/b37b4302-13e9-4b51-8ce9-9c1c872fede7)
+
+
+
+
+
 
 ## Tech Stack
 ### **Frontend**
